@@ -1,26 +1,16 @@
-# OS
-FROM alpine:3.7
+FROM postgres:alpine
 
-# PostgreSQL
-RUN echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
-    apk update && \
-    apk add curl "libpq@edge<9.7" "postgresql-client@edge<9.7" "postgresql@edge<9.7" "postgresql-contrib@edge<9.7" && \
-    mkdir /docker-entrypoint-initdb.d && \
-    curl -o /usr/local/bin/gosu -sSL "https://github.com/tianon/gosu/releases/download/1.2/gosu-amd64" && \
-    chmod +x /usr/local/bin/gosu && \
-    apk del curl && \
-    rm -rf /var/cache/apk/*
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_DB=postgres
+#Set documize environment variables.
+ENV DOCUMIZEDB='host=localhost port=5432 sslmode=disable user=postgres password=postgres dbname=postgres'
+ENV DOCUMIZEDBTYPE=postgresql
+ENV DOCUMIZESALT=95Rcecb8a8k71188d
+ENV DOCUMIZEPORT=8080
 
-ENV LANG en_US.utf8
-ENV PGDATA /var/lib/postgresql/data
-VOLUME /var/lib/postgresql/data
+EXPOSE 8080
 
-COPY docker-entrypoint.sh /
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
-
-EXPOSE 5432
-CMD ["postgres"]
-
-# Documize stuff
-ENTRYPOINT ["/bin/documize"]
+# Get the documize binary
+RUN	wget -O /bin/documize https://github.com/documize/community/releases/download/v1.76.2/documize-community-linux-amd64 \
+&& chmod +x /bin/documize
